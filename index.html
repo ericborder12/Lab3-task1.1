@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Validator</title>
+    <style>
+        .form-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input.valid {
+            border-color: #28a745;
+        }
+        
+        input.invalid {
+            border-color: #dc3545;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .success-icon {
+            color: #28a745;
+            float: right;
+            font-size: 18px;
+            display: none;
+        }
+        
+        .success-icon.show {
+            display: inline;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button[type="submit"]:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .success-message {
+            display: none;
+            padding: 15px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Sign Up Form</h2>
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="username">
+                    Username
+                    <span class="success-icon" id="usernameSuccess">✓</span>
+                </label>
+                <input type="text" id="username" placeholder="Enter username">
+                <div class="error-message" id="usernameError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">
+                    Email
+                    <span class="success-icon" id="emailSuccess">✓</span>
+                </label>
+                <input type="email" id="email" placeholder="Enter email address">
+                <div class="error-message" id="emailError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">
+                    Password
+                    <span class="success-icon" id="passwordSuccess">✓</span>
+                </label>
+                <input type="password" id="password" placeholder="Enter password (min 8 characters)">
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmPassword">
+                    Confirm Password
+                    <span class="success-icon" id="confirmPasswordSuccess">✓</span>
+                </label>
+                <input type="password" id="confirmPassword" placeholder="Confirm your password">
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+            
+            <button type="submit" id="submitBtn" disabled>Sign Up</button>
+        </form>
+        
+        <div class="success-message" id="successMessage">
+            ✓ Account created successfully!
+        </div>
+    </div>
+
+    <script>
+        // Validation state object
+        const validationState = {
+            username: false,
+            email: false,
+            password: false,
+            confirmPassword: false
+        };
+
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const submitBtn = document.getElementById('submitBtn');
+        const signupForm = document.getElementById('signupForm');
+        
+        function validateUsername(username) {
+            if (username.length < 4 || username.length > 20) {
+                return { valid: false, message: 'Username must be 4-20 characters' };
+            }
+            
+            const alphanumericRegex = /^[a-zA-Z0-9_]+$/;
+            if (!alphanumericRegex.test(username)) {
+                return { valid: false, message: 'Username must be alphanumeric (letters, numbers, underscore only)' };
+            }
+            
+            return { valid: true, message: '' };
+        }
+        
+        function validateEmail(email) {
+            if (!email) {
+                return { valid: false, message: 'Email is required' };
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return { valid: false, message: 'Please enter a valid email address' };
+            }
+            
+            // FIX: Added missing return statement
+            return { valid: true, message: '' };
+        }
+        
+        function validatePassword(password) {
+            if (password.length < 8) {
+                return { valid: false, message: 'Password must be at least 8 characters' };
+            }
+            
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            
+            if (!hasUppercase) {
+                return { valid: false, message: 'Password must contain at least 1 uppercase letter' };
+            }
+            
+            if (!hasNumber) {
+                return { valid: false, message: 'Password must contain at least 1 number' };
+            }
+            
+            return { valid: true, message: '' };
+        }
+        
+        function validatePasswordMatch(pass1, pass2) {
+            if (!pass2) {
+                return { valid: false, message: 'Please confirm your password' };  
+            }
+            
+            if (pass1 !== pass2) {
+                return { valid: false, message: 'Passwords do not match' };
+            }
+            
+            return { valid: true, message: '' };
+        }
+        
+        function showError(fieldId, message) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const inputElement = document.getElementById(fieldId);
+            const successIcon = document.getElementById(fieldId + 'Success');
+            
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+            inputElement.classList.remove('valid');
+            inputElement.classList.add('invalid');
+            if (successIcon) {
+                successIcon.classList.remove('show');
+            }
+        }
+        
+        function clearError(fieldId) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const inputElement = document.getElementById(fieldId);
+            const successIcon = document.getElementById(fieldId + 'Success');
+            
+            errorElement.classList.remove('show');
+            inputElement.classList.remove('invalid');
+            inputElement.classList.add('valid');
+            if (successIcon) {
+                successIcon.classList.add('show');
+            }
+        }
+        
+        function updateSubmitButton() {
+            const allValid = Object.values(validationState).every(state => state === true);
+            submitBtn.disabled = !allValid;
+        }
+        
+        // FIX: Added the missing validateField function
+        function validateField(fieldId, validationFunc, value, ...args) {
+            const result = validationFunc(value, ...args);
+            
+            if (result.valid) {
+                clearError(fieldId);
+                validationState[fieldId] = true;
+            } else {
+                showError(fieldId, result.message);
+                validationState[fieldId] = false;
+            }
+            
+            updateSubmitButton();
+        }
+        
+        function validateForm() {
+            validateField('username', validateUsername, usernameInput.value);
+            validateField('email', validateEmail, emailInput.value);
+            validateField('password', validatePassword, passwordInput.value);
+            validateField('confirmPassword', validatePasswordMatch, passwordInput.value, confirmPasswordInput.value);
+        }
+        
+        // Event listeners for real-time validation
+        usernameInput.addEventListener('input', function() {
+            validateField('username', validateUsername, this.value);
+        });
+    
+        emailInput.addEventListener('input', function() {
+            validateField('email', validateEmail, this.value);
+        });
+        
+        passwordInput.addEventListener('input', function() {
+            validateField('password', validatePassword, this.value);
+
+            if (confirmPasswordInput.value) {
+                validateField('confirmPassword', validatePasswordMatch, this.value, confirmPasswordInput.value);
+            }
+        });
+        
+        confirmPasswordInput.addEventListener('input', function() {
+            validateField('confirmPassword', validatePasswordMatch, passwordInput.value, this.value);
+        });
+        
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            validateForm();
+            
+            if (!submitBtn.disabled) {
+                const successMessage = document.getElementById('successMessage');
+                successMessage.classList.add('show');
+               
+                console.log('Form submitted successfully!');
+                console.log('Username:', usernameInput.value);
+                console.log('Email:', emailInput.value);
+                console.log('Password:', passwordInput.value);
+                
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                   
+                    signupForm.reset();
+                    Object.keys(validationState).forEach(key => {
+                        validationState[key] = false;
+                        document.getElementById(key).classList.remove('valid', 'invalid');
+                        const successIcon = document.getElementById(key + 'Success');
+                        if (successIcon) {
+                            successIcon.classList.remove('show');
+                        }
+                    });
+                    
+                    updateSubmitButton();
+                }, 2000);
+            } else {
+                alert('Please fix all errors before submitting');
+            }
+        });
+    </script>
+</body>
+</html>
