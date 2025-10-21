@@ -141,7 +141,7 @@
     </div>
 
     <script>
-        // Validation state object
+    
         const validationState = {
             username: false,
             email: false,
@@ -151,7 +151,7 @@
 
         const usernameInput = document.getElementById('username');
         const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
+        const passwordInput = document.getElementById('password')
         const confirmPasswordInput = document.getElementById('confirmPassword');
         const submitBtn = document.getElementById('submitBtn');
         const signupForm = document.getElementById('signupForm');
@@ -178,8 +178,6 @@
             if (!emailRegex.test(email)) {
                 return { valid: false, message: 'Please enter a valid email address' };
             }
-            
-            // FIX: Added missing return statement
             return { valid: true, message: '' };
         }
         
@@ -245,8 +243,6 @@
             const allValid = Object.values(validationState).every(state => state === true);
             submitBtn.disabled = !allValid;
         }
-        
-        // FIX: Added the missing validateField function
         function validateField(fieldId, validationFunc, value, ...args) {
             const result = validationFunc(value, ...args);
             
@@ -324,4 +320,5 @@
         });
     </script>
 </body>
+
 </html>
